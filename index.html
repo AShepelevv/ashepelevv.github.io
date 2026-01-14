@@ -4,9 +4,11 @@
   <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
 </head>
 <body class="body">
-<a id="container" class="container" href="https://t.me/apod_telegram" target="_blank">
+<a id="container" class="container" href="https://apod.nasa.gov/apod/" target="_blank">
   <div id="error-container" class="error">
-    <p id="error"></p>
+    <p id="error">
+      <span id="loader" class="loader"></span>
+    </p>
   </div>
   <div id="bottom-sheet" class="bottom-sheet">
     <div id="title" class="title"></div>
@@ -15,7 +17,7 @@
 </a>
 </body>
 <script>
-  const error = (description) => {
+  const showError = (description) => {
     document.getElementById('bottom-sheet').remove();
     document.getElementById('error').innerHTML = description;
   };
@@ -23,11 +25,26 @@
   fetch('data.json').then((response) => {
     return response.json();
   }).then((json) => {
-    document.getElementById('container').style.backgroundImage = 'url(image.jpg)';
+    if (!json.url) {
+      document.getElementById('error').innerHTML = 'Failed to parse APOD data loaded today. <br/><br/> Please visit the <a href="https://apod.nasa.gov/apod/" target="_blank">NASA website</a> to view the picture';
+      document.getElementById('bottom-sheet').remove();
+      return;
+    }
+    if (json.media_type === 'image') {
+      const backgroundImage = new Image();
+      backgroundImage.onload = () => {
+        document.getElementById('loader').remove();
+        document.getElementById('container').style.backgroundImage = 'url(' + backgroundImage.src + ')';
+      };
+      backgroundImage.src = json.url;
+    } else {
+      document.getElementById('container').innerHTML += '<iframe width="100%" height="100%" src="' + json.url + '" allowfullscreen></iframe>';
+      document.getElementById('error-container').remove();
+    }
     document.getElementById('description').innerHTML += json.explanation;
     document.getElementById('title').innerHTML += json.title;
   }).catch(() => {
-    error('Failed to parse APOD data loaded today');
+    showError('Failed to parse APOD data loaded today');
   });
 </script>
 </html>

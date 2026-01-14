@@ -2,8 +2,8 @@ name: Fetch APOD data from API
 
 on:
   schedule:
-    # Runs every day at 05:45 UTC
-    - cron: "45 5 * * *"
+    # Runs every day at 06:00 UTC
+    - cron: "0 6 * * *"
   workflow_dispatch:  # allow manual run
 
 jobs:
@@ -15,37 +15,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Get Tg session
+      - name: Call API and save data
         run: |
-          echo "${{ secrets.TG_SESSION_BASE_64 }}" | base64 --decode > session.session
-
-      - name: Set up secrets
-        run: |
-          echo "API_ID=${{ secrets.TG_API_ID }}" >> $GITHUB_ENV
-          echo "API_HASH=${{ secrets.TG_API_HASH }}" >> $GITHUB_ENV
+          curl -s https://api.nasa.gov/planetary/apod?api_key=${{secrets.NASA_API_KEY}} > data.json
 
       - name: Get current date
         run: echo "TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'   # You can change to '3.10', '3.12', etc.
-
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements.txt
-
-      - name: Run Python script
-        run: |
-          python3 main.py
         
       - name: Commit and push if changed
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add data.json
-          git add image.jpg
-          git diff --cached --quiet || git commit -m "Update data.json from NASA APOD Tg Channel, $TODAY"
+          git diff --cached --quiet || git commit -m "Update data.json from NASA API, $TODAY"
           git push

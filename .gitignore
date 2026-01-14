@@ -1,5 +1,5 @@
-/venv/
+/.env
 /.idea/
+/venv/
 *.session
-.env
 session.txt

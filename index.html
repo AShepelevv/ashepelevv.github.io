@@ -37,6 +37,9 @@
         document.getElementById('container').style.backgroundImage = 'url(' + backgroundImage.src + ')';
       };
       backgroundImage.src = json.url;
+    } else if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(json.url)) {
+      document.getElementById('container').innerHTML += '<video id="apod-video" autoplay muted loop><source src="' + json.url + '"></video>';
+      document.getElementById('error-container').remove();
     } else {
       document.getElementById('container').innerHTML += '<iframe width="100%" height="100%" src="' + json.url + '" allowfullscreen></iframe>';
       document.getElementById('error-container').remove();

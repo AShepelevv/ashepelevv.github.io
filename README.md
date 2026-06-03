@@ -1,0 +1,2 @@
+[![Fetch APOD data from API](https://github.com/AShepelevv/ashepelevv.github.io/actions/workflows/update-data.yml/badge.svg)](https://github.com/AShepelevv/ashepelevv.github.io/actions/workflows/update-data.yml)
+[![pages-build-deployment](https://github.com/AShepelevv/ashepelevv.github.io/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/AShepelevv/ashepelevv.github.io/actions/workflows/pages/pages-build-deployment)

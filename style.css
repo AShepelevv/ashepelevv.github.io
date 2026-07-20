@@ -1,11 +1,11 @@
 @font-face {
-    font-family: "YS Bold";
-    src: url(https://github.com/dezmound/y.h.1/raw/master/assets/fonts/YS%20Text-Bold.ttf) format("truetype");
+    font-family: "YS Medium";
+    src: url(fonts/YandexSansText-Medium.ttf) format("truetype");
 }
 
 @font-face {
     font-family: "YS light";
-    src: url(https://github.com/dezmound/y.h.1/raw/master/assets/fonts/YS%20Text-Light.ttf) format("truetype");
+    src: url(fonts/YandexSansText-Light.ttf) format("truetype");
 }
 
 body {
@@ -71,7 +71,7 @@ body {
 
 .title {
     padding-bottom: 4px;
-    font-family: YS Bold, sans-serif;
+    font-family: YS Medium, sans-serif;
     font-size: 18px;
     display: -webkit-box;
     -webkit-line-clamp: 2;

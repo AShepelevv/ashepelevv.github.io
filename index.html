@@ -27,28 +27,19 @@
     if (json.permalink) {
       document.getElementById('container').href = json.permalink;
     }
-    if (!json.url) {
+    if (!json.hdurl) {
       document.getElementById('error').innerHTML = 'Failed to parse APOD data loaded today. <br/><br/> Please visit the <a href="https://science.nasa.gov/apod/" target="_blank">NASA website</a> to view the picture';
       document.getElementById('bottom-sheet').remove();
       return;
     }
-    if (json.media_type === 'image') {
-      const backgroundImage = new Image();
-      backgroundImage.onload = () => {
-        document.getElementById('loader').remove();
-        document.getElementById('container').style.backgroundImage = 'url("' + backgroundImage.src + '")';
-      };
-      backgroundImage.src = json.url;
-    } else if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(json.url)) {
-      document.body.classList.add('video-mode');
-      document.getElementById('container').innerHTML += '<video id="apod-video" autoplay muted loop><source src="' + json.url + '"></video>';
-      document.getElementById('error-container').remove();
-    } else {
-      document.getElementById('container').innerHTML += '<iframe width="100%" height="100%" src="' + json.url + '" allowfullscreen></iframe>';
-      document.getElementById('error-container').remove();
-    }
-    document.getElementById('description').textContent = json.explanation;
-    document.getElementById('title').textContent = json.title;
+    const backgroundImage = new Image();
+    backgroundImage.onload = () => {
+      document.getElementById('loader').remove();
+      document.getElementById('container').style.backgroundImage = 'url("' + backgroundImage.src + '")';
+    };
+    backgroundImage.src = json.hdurl;
+    document.getElementById('description').innerHTML += json.explanation;
+    document.getElementById('title').innerHTML += json.title;
   }).catch(() => {
     showError('Failed to parse APOD data loaded today');
   });

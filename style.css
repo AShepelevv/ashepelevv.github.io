@@ -22,24 +22,6 @@ body {
     background-size: cover;
 }
 
-/* A raw video keeps its aspect ratio, so fill the letterbox bars around it
-   with black instead of the page background */
-.video-mode,
-.video-mode .container {
-    background-color: black;
-}
-
-#apod-video {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    z-index: 0;
-}
-
 .bottom-sheet {
     padding: 8px;
     width: calc(100% - 16px);

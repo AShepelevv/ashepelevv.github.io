@@ -1,14 +1,67 @@
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
+from html.parser import HTMLParser
 
-API_URL = "https://api.nasa.gov/planetary/apod?api_key={}"
+API_URL = "https://science.nasa.gov/wp-json/wp/v2/apod-basic/?per_page=1&api_key={}"
+SITE_URL = "https://science.nasa.gov/"
 OUTPUT_FILE = "data.json"
 MAX_ATTEMPTS = 5
 BASE_DELAY = 10
+MEDIA_TAGS = {"img", "video", "source", "iframe"}
+EXPLANATION_LABEL = re.compile(r"^Explanation\s*:\s*")
+
+
+class TextExtractor(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "br":
+            self.parts.append(" ")
+
+    def handle_data(self, data):
+        self.parts.append(data)
+
+
+class MediaFinder(HTMLParser):
+    """APOD Basic HTML keeps the legacy APOD page layout: the media of the day
+    is the first image, video or iframe inside the leading <center> block."""
+
+    def __init__(self):
+        super().__init__()
+        self.src = None
+        self.searching = True
+
+    def handle_starttag(self, tag, attrs):
+        src = dict(attrs).get("src")
+        if self.searching and tag in MEDIA_TAGS and src:
+            self.src = src
+            self.searching = False
+
+    def handle_endtag(self, tag):
+        if tag == "center":
+            self.searching = False
+
+
+def to_text(fragment):
+    parser = TextExtractor()
+    parser.feed(fragment or "")
+    parser.close()
+    return " ".join("".join(parser.parts).split())
+
+
+def find_media_src(page):
+    finder = MediaFinder()
+    finder.feed(page or "")
+    finder.close()
+    return finder.src
 
 
 def fetch(api_key):
@@ -17,8 +70,25 @@ def fetch(api_key):
         return json.loads(response.read())
 
 
-def valid(data):
-    return isinstance(data, dict) and ("url" in data or "hdurl" in data)
+def to_legacy_format(entry):
+    src = find_media_src(entry.get("basic_html"))
+    return {
+        "date": entry.get("date"),
+        "title": to_text(entry.get("title")),
+        "explanation": EXPLANATION_LABEL.sub("", to_text(entry.get("explanation"))),
+        "media_type": entry.get("media_type") if src else "image",
+        "url": urllib.parse.urljoin(SITE_URL, src) if src else entry.get("hdurl"),
+        "hdurl": entry.get("hdurl"),
+        "permalink": entry.get("permalink"),
+    }
+
+
+def latest_apod(data):
+    if isinstance(data, list) and data and isinstance(data[0], dict):
+        apod = to_legacy_format(data[0])
+        if apod["url"]:
+            return apod
+    return None
 
 
 def main():
@@ -32,12 +102,13 @@ def main():
         print(f"Attempt {attempt} of {MAX_ATTEMPTS}...")
         try:
             data = fetch(api_key)
-            if valid(data):
+            apod = latest_apod(data)
+            if apod:
                 with open(OUTPUT_FILE, "w") as f:
-                    json.dump(data, f)
+                    json.dump(apod, f)
                 print(f"Success on attempt {attempt}")
                 return
-            print(f"Unexpected response: {data}", file=sys.stderr)
+            print(f"Unexpected response: {str(data)[:1000]}", file=sys.stderr)
         except Exception as e:
             print(f"Error: {e}", file=sys.stderr)
 
